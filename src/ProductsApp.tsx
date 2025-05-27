@@ -10,13 +10,32 @@ import {EvaIconsPack} from '@ui-kitten/eva-icons';
 export const ProductsApp = () => {
   const colorSheme = useColorScheme();
   const theme = colorSheme === 'dark' ? eva.dark : eva.light;
-
+  const backgroundColor =
+    colorSheme === 'dark' ? theme['color-basic-800'] : theme['color-basic-100'];
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
 
       <ApplicationProvider {...eva} theme={theme}>
-        <NavigationContainer>
+        <NavigationContainer
+          // configuracion para evitar flasheos por cambios de tema entre pantallas
+          theme={{
+            dark: colorSheme === 'dark',
+            colors: {
+              primary: theme['color-primary-500'],
+              background: backgroundColor,
+              card: theme['color-basic-100'],
+              text: theme['text-basic-color'],
+              border: theme['color-basic-800'],
+              notification: theme['color-primary-500'],
+            },
+            fonts: {
+              regular: {fontFamily: 'System', fontWeight: 'normal'},
+              medium: {fontFamily: 'System', fontWeight: '500'},
+              bold: {fontFamily: 'System', fontWeight: 'bold'},
+              heavy: {fontFamily: 'System', fontWeight: '900'},
+            },
+          }}>
           <StackNavigator />
         </NavigationContainer>
       </ApplicationProvider>
