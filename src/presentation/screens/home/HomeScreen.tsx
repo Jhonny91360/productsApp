@@ -6,13 +6,7 @@ export const HomeScreen = () => {
   return (
     <Layout>
       <Text>HomeScreen</Text>
-
-      {/* <Icon name="facebook" /> */}
-      <Button
-      // accessoryLeft={<Icon name="facebook" />}
-      >
-        Cerrar sesión
-      </Button>
+      <Button>Cerrar sesión</Button>
     </Layout>
   );
 };
