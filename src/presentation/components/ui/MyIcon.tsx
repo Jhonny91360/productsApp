@@ -19,7 +19,7 @@ export const MyIcon = ({name, size = 32, color, white = false}: Props) => {
   } else {
     color = theme[color];
   }
-  console.log('COlor: ', color);
+
   return (
     <Icon
       //   style={styles.icon}

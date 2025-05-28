@@ -10,6 +10,7 @@ import {RootStackParams} from '../../navigation/StackNavigator';
 interface Props extends StackScreenProps<RootStackParams, 'LoginScreen'> {}
 export const LoginScreen = ({navigation}: Props) => {
   const {height} = useWindowDimensions();
+
   return (
     <Layout style={{flex: 1}}>
       <ScrollView style={{marginHorizontal: 40}}>
