@@ -1,15 +1,43 @@
 /* eslint-disable react-native/no-inline-styles */
 import {Button, Input, Layout, Text} from '@ui-kitten/components';
-import React from 'react';
-import {useWindowDimensions} from 'react-native';
+import React, {useState} from 'react';
+import {Alert, useWindowDimensions} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MyIcon} from '../../components/ui/MyIcon';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParams} from '../../navigation/StackNavigator';
+import {useAuthStore} from '../../store/auth/useAuthStore';
 
 interface Props extends StackScreenProps<RootStackParams, 'LoginScreen'> {}
 export const LoginScreen = ({navigation}: Props) => {
   const {height} = useWindowDimensions();
+
+  const [isPosting, setIsPosting] = useState(false);
+
+  const {login} = useAuthStore();
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
+
+  const onLogin = async () => {
+    if (form.email.length === 0 || form.password.length === 0) {
+      Alert.alert('Error', 'Todos los campos son obligatorios');
+      return;
+    }
+
+    setIsPosting(true);
+
+    const wasSuccessful = await login(form.email, form.password);
+
+    setIsPosting(false);
+
+    if (wasSuccessful) {
+      return;
+    }
+
+    Alert.alert('Error', 'Credenciales incorrectas');
+  };
 
   return (
     <Layout style={{flex: 1}}>
@@ -23,8 +51,10 @@ export const LoginScreen = ({navigation}: Props) => {
 
         <Layout style={{marginTop: 20}}>
           <Input
-            placeholder="Correo"
+            placeholder="Correo electrónico"
             autoCapitalize="none"
+            value={form.email}
+            onChangeText={value => setForm({...form, email: value})}
             keyboardType="email-address"
             style={{marginBottom: 10}}
             accessoryLeft={<MyIcon name="mail-outline" />}
@@ -32,6 +62,8 @@ export const LoginScreen = ({navigation}: Props) => {
           <Input
             placeholder="Contraseña"
             autoCapitalize="none"
+            value={form.password}
+            onChangeText={value => setForm({...form, password: value})}
             secureTextEntry
             style={{marginBottom: 10}}
             accessoryLeft={<MyIcon name="lock-closed-outline" />}
@@ -47,7 +79,8 @@ export const LoginScreen = ({navigation}: Props) => {
         <Layout>
           <Button
             accessoryRight={<MyIcon name="arrow-forward-outline" white />}
-            onPress={() => console.log('button pressed')}>
+            onPress={onLogin}
+            disabled={isPosting}>
             Ingresar
           </Button>
         </Layout>
