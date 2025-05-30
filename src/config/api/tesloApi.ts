@@ -19,7 +19,7 @@ const testloApi = axios.create({
 
 testloApi.interceptors.request.use(
   async config => {
-    const token = StorageAdapter.getItem('token');
+    const token = await StorageAdapter.getItem('token');
     if (token) {
       // eslint-disable-next-line dot-notation
       config.headers['Authorization'] = `Bearer ${token}`;

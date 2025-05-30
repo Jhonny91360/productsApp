@@ -6,6 +6,7 @@ import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import {useColorScheme} from 'react-native';
 import {EvaIconsPack} from '@ui-kitten/eva-icons';
+import {AuthProvider} from './presentation/provider/AuthProvider';
 
 export const ProductsApp = () => {
   const colorSheme = useColorScheme();
@@ -36,7 +37,9 @@ export const ProductsApp = () => {
               heavy: {fontFamily: 'System', fontWeight: '900'},
             },
           }}>
-          <StackNavigator />
+          <AuthProvider>
+            <StackNavigator />
+          </AuthProvider>
         </NavigationContainer>
       </ApplicationProvider>
     </>

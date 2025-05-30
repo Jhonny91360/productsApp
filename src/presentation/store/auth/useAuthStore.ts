@@ -31,7 +31,6 @@ export const useAuthStore = create<AuthState>()(set => ({
     const storedToken = await StorageAdapter.getItem('token');
     console.log('storeToken--->', storedToken);
 
-    console.log('respuesta login--->', {response});
     set({status: 'authenticated', token: response.token, user: response.user});
 
     return true;
