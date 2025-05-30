@@ -1,15 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
-import Icon from '@react-native-vector-icons/ionicons';
-import {Button, Layout} from '@ui-kitten/components';
+import {Button, Layout, Text} from '@ui-kitten/components';
 import React from 'react';
-import {Text} from 'react-native';
+import {MyIcon} from '../../components/ui/MyIcon';
+import {useAuthStore} from '../../store/auth/useAuthStore';
 
 export const HomeScreen = () => {
+  const {logout} = useAuthStore();
   return (
     <Layout style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <Text>HomeScreen</Text>
       <Button
-        accessoryRight={<Icon name="logo-facebook" size={30} color="white" />}>
+        onPress={logout}
+        accessoryRight={<MyIcon name="log-out-outline" size={30} white />}>
         Cerrar sesión
       </Button>
     </Layout>

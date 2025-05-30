@@ -41,3 +41,22 @@ export const authCheckStatus = async () => {
     return null;
   }
 };
+
+export const authRegister = async (
+  email: string,
+  password: string,
+  fullName: string,
+) => {
+  email = email.toLowerCase();
+  try {
+    const {data} = await testloApi.post<AuthResponse>('/auth/register', {
+      email,
+      password,
+      fullName,
+    });
+    return returnUserToken(data);
+  } catch (error) {
+    console.log('Error in authRegister: ', error);
+    return null;
+  }
+};
