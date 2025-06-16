@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useRef} from 'react';
 
 import {MainLayout} from '../../layouts/MainLayout';
@@ -9,15 +10,17 @@ import {
   Text,
   useTheme,
 } from '@ui-kitten/components';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery} from '@tanstack/react-query';
 import {getProductById} from '../../../actions/products/get-product-by-id';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParams} from '../../navigation/StackNavigator';
 import {FullScreenLoader} from '../../components/ui/FullScreenLoader';
 import {FlatList, ScrollView} from 'react-native';
 import {FadeInImage} from '../../components/ui/FadeInImage';
-import {Gender, Size} from '../../../domain/entities/product';
+import {Gender, Product, Size} from '../../../domain/entities/product';
 import {MyIcon} from '../../components/ui/MyIcon';
+import {Formik} from 'formik';
+import {updateCreateProduct} from '../../../actions/products/update-create-product';
 
 interface Props extends StackScreenProps<RootStackParams, 'ProductScreen'> {}
 
@@ -36,139 +39,179 @@ export const ProductScreen = ({route}: Props) => {
     },
   });
 
+  const mutation = useMutation({
+    mutationFn: (data: Product) =>
+      updateCreateProduct({...data, id: productIdRef.current}),
+    onSuccess: (data: Product) => {
+      console.log('Success', {data});
+    },
+  });
+
+  if (!product) {
+    return <MainLayout title="Cargando..." />;
+  }
+
   return (
-    <MainLayout title={`${product?.title ?? 'Product'} `}>
-      {isLoading ? (
-        <FullScreenLoader />
-      ) : (
-        <ScrollView style={{flex: 1}}>
-          {/* Imagenes del producto */}
-          <Layout>
-            <FlatList
-              data={product?.images}
-              keyExtractor={item => item}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({item}) => (
-                <FadeInImage
-                  uri={item}
-                  style={{width: 300, height: 300, marginHorizontal: 10}}
+    <Formik
+      initialValues={product}
+      onSubmit={values => mutation.mutate(values)}>
+      {({handleChange, handleSubmit, values, setFieldValue}) => (
+        <MainLayout
+          title={`${values?.title ?? 'Product'} `}
+          subTitle={`Precio: $${values?.price}`}>
+          {isLoading ? (
+            <FullScreenLoader />
+          ) : (
+            <ScrollView style={{flex: 1}}>
+              {/* Imagenes del producto */}
+              <Layout>
+                <FlatList
+                  data={values?.images}
+                  keyExtractor={item => item}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({item}) => (
+                    <FadeInImage
+                      uri={item}
+                      style={{width: 300, height: 300, marginHorizontal: 10}}
+                    />
+                  )}
                 />
-              )}
-            />
-          </Layout>
+              </Layout>
 
-          {/* Formulario */}
-          <Layout style={{marginHorizontal: 10}}>
-            <Input
-              label={'Titulo'}
-              value={product?.title}
-              style={{marginVertical: 5}}
-            />
-            <Input
-              label={'Slug'}
-              value={product?.slug}
-              style={{marginVertical: 5}}
-            />
-            <Input
-              label={'Descripción'}
-              value={product?.description}
-              multiline
-              numberOfLines={5}
-              style={{marginVertical: 5}}
-            />
-          </Layout>
+              {/* Formulario */}
+              <Layout style={{marginHorizontal: 10}}>
+                <Input
+                  label={'Titulo'}
+                  style={{marginVertical: 5}}
+                  value={values?.title}
+                  onChange={e => handleChange('title')(e.nativeEvent.text)}
+                />
+                <Input
+                  label={'Slug'}
+                  style={{marginVertical: 5}}
+                  value={values?.slug}
+                  onChange={e => handleChange('slug')(e.nativeEvent.text)}
+                />
+                <Input
+                  label={'Descripción'}
+                  multiline
+                  numberOfLines={5}
+                  style={{marginVertical: 5}}
+                  value={values?.description}
+                  onChange={e =>
+                    handleChange('description')(e.nativeEvent.text)
+                  }
+                />
+              </Layout>
 
-          {/* Precio y stock */}
-          <Layout
-            style={{
-              marginHorizontal: 15,
-              marginVertical: 5,
-              flexDirection: 'row',
-              gap: 10,
-            }}>
-            <Input
-              label={'Precio'}
-              value={product?.price.toString()}
-              style={{flex: 1}}
-            />
-            <Input
-              label={'Inventario'}
-              value={product?.stock.toString()}
-              style={{flex: 1}}
-            />
-          </Layout>
-
-          {/* Selectores */}
-          <ButtonGroup
-            size="small"
-            appearance="outline"
-            style={{
-              marginHorizontal: 15,
-              margin: 2,
-              marginTop: 20,
-            }}>
-            {sizes.map(size => (
-              <Button
-                key={size}
+              {/* Precio y stock */}
+              <Layout
                 style={{
-                  flex: 1,
-                  backgroundColor: true
-                    ? theme['color-primary-200']
-                    : undefined,
+                  marginHorizontal: 15,
+                  marginVertical: 5,
+                  flexDirection: 'row',
+                  gap: 10,
                 }}>
-                {size}
-              </Button>
-            ))}
-          </ButtonGroup>
+                <Input
+                  label={'Precio'}
+                  style={{flex: 1}}
+                  onChange={e => handleChange('price')(e.nativeEvent.text)}
+                  value={values?.price.toString()}
+                  keyboardType="numeric"
+                />
+                <Input
+                  label={'Inventario'}
+                  style={{flex: 1}}
+                  value={values?.stock.toString()}
+                  onChange={e => handleChange('stock')(e.nativeEvent.text)}
+                  keyboardType="numeric"
+                />
+              </Layout>
 
-          <ButtonGroup
-            size="small"
-            appearance="outline"
-            style={{
-              marginHorizontal: 15,
-              margin: 2,
-              marginTop: 20,
-            }}>
-            {genders.map(gender => (
-              <Button
-                key={gender}
+              {/* Selectores */}
+              <ButtonGroup
+                size="small"
+                appearance="outline"
                 style={{
-                  flex: 1,
-                  backgroundColor: true
-                    ? theme['color-primary-200']
-                    : undefined,
+                  marginHorizontal: 15,
+                  margin: 2,
+                  marginTop: 20,
                 }}>
-                {gender}
+                {sizes.map(size => (
+                  <Button
+                    onPress={() =>
+                      setFieldValue(
+                        'sizes',
+                        values?.sizes.includes(size)
+                          ? values?.sizes.filter(s => s !== size)
+                          : [...values?.sizes, size],
+                      )
+                    }
+                    key={size}
+                    style={{
+                      flex: 1,
+                      backgroundColor: values?.sizes.includes(size)
+                        ? theme['color-primary-200']
+                        : undefined,
+                    }}>
+                    {size}
+                  </Button>
+                ))}
+              </ButtonGroup>
+
+              <ButtonGroup
+                size="small"
+                appearance="outline"
+                style={{
+                  marginHorizontal: 15,
+                  margin: 2,
+                  marginTop: 20,
+                }}>
+                {genders.map(gender => (
+                  <Button
+                    onPress={() => setFieldValue('gender', gender)}
+                    key={gender}
+                    style={{
+                      flex: 1,
+                      backgroundColor:
+                        gender === values?.gender
+                          ? theme['color-primary-200']
+                          : undefined,
+                    }}>
+                    {gender}
+                  </Button>
+                ))}
+              </ButtonGroup>
+              {/* Boton guardar */}
+
+              <Button
+                accessoryLeft={<MyIcon name="save-outline" white size={25} />}
+                style={{
+                  marginHorizontal: 15,
+                  margin: 2,
+                  marginTop: 20,
+                }}
+                onPress={() => {
+                  handleSubmit();
+                }}
+                disabled={mutation.isPending}>
+                Guardar
               </Button>
-            ))}
-          </ButtonGroup>
-          {/* Boton guardar */}
 
-          <Button
-            accessoryLeft={<MyIcon name="save-outline" white size={25} />}
-            style={{
-              marginHorizontal: 15,
-              margin: 2,
-              marginTop: 20,
-            }}
-            onPress={() => {
-              console.log('Guardando...');
-            }}>
-            Guardar
-          </Button>
+              {/* Solo para las pruebas */}
+              <Text>{JSON.stringify(values, null, 2)}</Text>
 
-          {/* Solo para las pruebas */}
-          <Text>{JSON.stringify(product, null, 2)}</Text>
-
-          {/* Espacio final */}
-          <Layout
-            style={{
-              height: 200,
-            }}
-          />
-        </ScrollView>
+              {/* Espacio final */}
+              <Layout
+                style={{
+                  height: 200,
+                }}
+              />
+            </ScrollView>
+          )}
+        </MainLayout>
       )}
-    </MainLayout>
+    </Formik>
   );
 };
