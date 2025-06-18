@@ -10,7 +10,7 @@ import {
   Text,
   useTheme,
 } from '@ui-kitten/components';
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getProductById} from '../../../actions/products/get-product-by-id';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParams} from '../../navigation/StackNavigator';
@@ -31,6 +31,8 @@ export const ProductScreen = ({route}: Props) => {
 
   const theme = useTheme();
 
+  const queryClient = useQueryClient();
+
   const {data: product, isLoading} = useQuery({
     queryKey: ['product', productIdRef.current],
     staleTime: 1000 * 60 * 60, // 1h
@@ -43,7 +45,11 @@ export const ProductScreen = ({route}: Props) => {
     mutationFn: (data: Product) =>
       updateCreateProduct({...data, id: productIdRef.current}),
     onSuccess: (data: Product) => {
-      console.log('Success', {data});
+      productIdRef.current = data.id; // creación
+
+      queryClient.invalidateQueries({queryKey: ['products', 'infinite']}); // refresh product list
+      queryClient.invalidateQueries({queryKey: ['product', data.id]}); // refresh product
+      // queryClient.setQueryData(['product',data.id], data); // opcion 2 , set data directly
     },
   });
 
