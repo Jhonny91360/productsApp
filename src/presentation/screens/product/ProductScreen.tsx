@@ -20,6 +20,7 @@ import {Gender, Product, Size} from '../../../domain/entities/product';
 import {MyIcon} from '../../components/ui/MyIcon';
 import {Formik} from 'formik';
 import {updateCreateProduct} from '../../../actions/products/update-create-product';
+import {CameraAdapter} from '../../../config/adapters/camera-adapter';
 
 interface Props extends StackScreenProps<RootStackParams, 'ProductScreen'> {}
 
@@ -63,7 +64,13 @@ export const ProductScreen = ({route}: Props) => {
       {({handleChange, handleSubmit, values, setFieldValue}) => (
         <MainLayout
           title={`${values?.title ?? 'Product'} `}
-          subTitle={`Precio: $${values?.price}`}>
+          subTitle={`Precio: $${values?.price}`}
+          rightActionIcon="camera-outline"
+          rightAction={async () => {
+            const photos = await CameraAdapter.pickImage();
+            console.log('Photos', {photos});
+            setFieldValue('images', [...values.images, ...photos]);
+          }}>
           {isLoading ? (
             <FullScreenLoader />
           ) : (
